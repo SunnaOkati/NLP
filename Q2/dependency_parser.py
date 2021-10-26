@@ -169,7 +169,24 @@ class DepParser(object):
 
         #TODO: implement left arc according to the lecture slides
 
-        return True
+        # Check if the topmost elem in stack is root
+        top = self.ctx.stack_top()
+        top_check = top != ["ROOT"]
+        # Check if there is a rule from next input id to stack top
+        next_word_id = self.ctx.next_buffer_word_id()
+        rule_check = self.in_rules((self.ctx.word_id_to_str(next_word_id), self.ctx.word_id_to_str(top)))
+        #check if it has an arrow head already
+        target_dependency_check = self.ctx.has_dependency_with_target(top)
+        if(top_check and rule_check and not target_dependency_check):
+
+            # Pop the top of the stack
+            v_i = self.ctx.pop_stack()
+
+            #Add a dependency  next buffer word to popped stack top
+            self.ctx.add_dependency(next_word_id, v_i)
+            return True
+
+        return False
 
     def right_arc(self):
         """Check if a right arc can be performed. 
@@ -182,7 +199,24 @@ class DepParser(object):
 
         #TODO: implement right arc according to the lecture slides
 
-        return True
+        # Check if the topmost elem in stack is root
+        top = self.ctx.stack_top()
+        # Check if there is a rule from stack top to next input id
+        next_word_id = self.ctx.next_buffer_word_id()
+        rule_check = self.in_rules((self.ctx.word_id_to_str(top), self.ctx.word_id_to_str(next_word_id)))
+        # check if it has an arrow head already
+        target_dependency_check = self.ctx.has_dependency_with_target(next_word_id)
+        if (rule_check and not target_dependency_check):
+
+            # remove the top of the input buffer and add it to the stack
+            v_j = self.ctx.pop_buffer()
+            self.ctx.push_stack(v_j)
+
+            # Add a dependency from prev stack top to new stack top
+            self.ctx.add_dependency(top, v_j)
+            return True
+
+        return False
 
     def reduce(self):
         """Check if reduce can be performed. 
@@ -194,6 +228,14 @@ class DepParser(object):
         """
 
         #TODO: implement reduce according to the lecture slides
+
+        # Check if the stack top already has a head
+        top = self.ctx.stack_top()
+        if(self.ctx.has_dependency_with_target(top)):
+
+            #remove the top of the stack
+            self.ctx.pop_stack()
+            return True
 
         return False
 
@@ -237,7 +279,17 @@ def parse(dp):
 
     #TODO implement parse, follow the instructions in the doc comment above 
     # refer back to the lecture slides if you have trouble
-
+    while not dp.ctx.is_buffer_empty():
+        #print(dp.ctx.stack_top())
+        if not dp.left_arc():
+            #print("Step 1")
+            if not dp.right_arc():
+                #print("Step 2")
+                if not dp.reduce():
+                    #print("Step 3")
+                    if not dp.shift():
+                        #print("Step 4")
+                        return False
     return True
 
 def main():
