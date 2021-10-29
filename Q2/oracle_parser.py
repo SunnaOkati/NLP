@@ -13,6 +13,12 @@ def normalise_word(word):
     """
     return word.strip().lower()
 
+def reduce_check(stack_id, buff_id, gold):
+    for tuple in gold:
+        if(tuple[0] < stack_id and tuple[1] == buff_id) or (tuple[1] < stack_id and tuple[0] == buff_id):
+            return True
+    return False
+
 def extract_features(ctx):
     """Extract some simple features from a DepContext object
     the features represent the current state.
@@ -68,6 +74,32 @@ def parse_gold(dp, gold):
     # so that it works for unlabelled dependency parsing.
     # if needed you can add helper methods within this file (oracle_parser.py)
 
+    while not dp.ctx.is_buffer_empty():
+        states.append(extract_features(dp.ctx))
+        #print(dp.ctx.stack_top())
+        # get the top of the stack and the next word in the buffer
+        stack_id = dp.ctx.stack_top()
+        if dp.ctx.is_buffer_empty():
+            buff_id = 0
+        else:
+            buff_id = dp.ctx.next_buffer_word_id()
+
+        if (buff_id, stack_id) in gold:
+            #print("Step 1")
+            dp.left_arc()
+            actions.append("left")
+        elif (stack_id, buff_id) in gold :
+            #print("Step 2")
+            dp.right_arc()
+            actions.append("right")
+        elif reduce_check(stack_id, buff_id, gold):
+            #print("Step 3")
+            dp.reduce()
+            actions.append("reduce")
+        else:
+            # print("Step 4")
+            dp.shift()
+            actions.append("shift")
     return actions, states
 
 

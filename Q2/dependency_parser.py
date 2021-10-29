@@ -279,6 +279,7 @@ def parse(dp):
 
     #TODO implement parse, follow the instructions in the doc comment above 
     # refer back to the lecture slides if you have trouble
+    #print("Stack Top: %d Next buff id: %d"% (dp.ctx.stack_top(), dp.ctx.next_buffer_word_id()))
     while not dp.ctx.is_buffer_empty():
         #print(dp.ctx.stack_top())
         if not dp.left_arc():
