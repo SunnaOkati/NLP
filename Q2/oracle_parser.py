@@ -1,4 +1,7 @@
 import json
+
+from tqdm import tqdm
+
 from dependency_parser import DepContext, DepParser
 
 
@@ -69,35 +72,33 @@ def parse_gold(dp, gold):
     actions = []
     states = []
 
-    # TODO: implement the parse gold function by modifying 
+    # Implemented the parse gold function by modifying
     # Algorithm 1 from this paper: https://aclanthology.org/C12-1059.pdf 
     # so that it works for unlabelled dependency parsing.
     # if needed you can add helper methods within this file (oracle_parser.py)
 
+    # Termination Condition is when there are no elements in the buffer
     while not dp.ctx.is_buffer_empty():
+
+        # Add the current state (i.e feature) to the list of states
         states.append(extract_features(dp.ctx))
         #print(dp.ctx.stack_top())
+
         # get the top of the stack and the next word in the buffer
         stack_id = dp.ctx.stack_top()
-        if dp.ctx.is_buffer_empty():
-            buff_id = 0
-        else:
-            buff_id = dp.ctx.next_buffer_word_id()
+        buff_id = dp.ctx.next_buffer_word_id()
 
-        if (buff_id, stack_id) in gold:
+        if (buff_id, stack_id) in gold and dp.left_arc():
             #print("Step 1")
-            dp.left_arc()
             actions.append("left")
-        elif (stack_id, buff_id) in gold :
+        elif (stack_id, buff_id) in gold and dp.right_arc():
             #print("Step 2")
-            dp.right_arc()
             actions.append("right")
-        elif reduce_check(stack_id, buff_id, gold):
+        elif reduce_check(stack_id, buff_id, gold) and dp.reduce():
             #print("Step 3")
-            dp.reduce()
             actions.append("reduce")
         else:
-            # print("Step 4")
+            #print("Step 4")
             dp.shift()
             actions.append("shift")
     return actions, states
