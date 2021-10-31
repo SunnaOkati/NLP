@@ -167,8 +167,6 @@ class DepParser(object):
             boolean: True if left arc was performed, else False
         """
 
-        #TODO: implement left arc according to the lecture slides
-
         # Check if the topmost elem in stack is root
         top = self.ctx.stack_top()
         top_check = top != ["ROOT"]
@@ -197,8 +195,6 @@ class DepParser(object):
             boolean: True if right arc was performed, else False
         """
 
-        #TODO: implement right arc according to the lecture slides
-
         # Check if the topmost elem in stack is root
         top = self.ctx.stack_top()
         # Check if there is a rule from stack top to next input id
@@ -226,8 +222,6 @@ class DepParser(object):
         Returns:
             boolean: True if reduce was performed, else False
         """
-
-        #TODO: implement reduce according to the lecture slides
 
         # Check if the stack top already has a head
         top = self.ctx.stack_top()
@@ -277,8 +271,6 @@ def parse(dp):
         False if the buffer is not empty when no more operations can be performed.
     """
 
-    #TODO implement parse, follow the instructions in the doc comment above 
-    # refer back to the lecture slides if you have trouble
     #print("Stack Top: %d Next buff id: %d"% (dp.ctx.stack_top(), dp.ctx.next_buffer_word_id()))
     while not dp.ctx.is_buffer_empty():
         #print(dp.ctx.stack_top())

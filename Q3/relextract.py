@@ -220,4 +220,5 @@ relations = [
     ('Hokusai', 'Japan'), 
     ('Hans Christian Andersen', 'Denmark')
     ]
+
 write_output_file(relations)

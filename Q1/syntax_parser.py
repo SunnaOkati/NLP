@@ -48,8 +48,16 @@ class RuleWriter(object):
         json.dump(self.rules, open(filename, "w"))
 
 
-# TODO: estimate the conditional probabilities of the rules in the grammar
 def form_relation(parent, children):
+    """
+    This is a recurrent functon to form relations
+    Given : Parent and list of immediate children as arguments
+    Relations are stores in rel_dict global Dictionary
+    :param parent: String
+    :param children: List of strings
+    """
+
+    # Check if the children is a Terminal, store/ create a relation between Parent -> Children i.e Non Terminal -> Terminal
     if (isinstance(children, list) == False):
         if parent in rel_dict:
             rel_dict[parent].append([children])
@@ -57,6 +65,9 @@ def form_relation(parent, children):
             rel_dict[parent] = [[children]]
 
     else:
+        # If not, for each terminal/ non terminal in the list of children
+        # * append them to RHS
+        # * Run a recurrent function call based on the number of their children
         rhs = []
         for child in children:
             rhs.append(child[0])
@@ -73,17 +84,31 @@ def form_relation(parent, children):
             rel_dict[parent] = [rhs]
 
 def calculate_prob(rel_dict, rule_writer):
+    """
+    This function calculates the probabilities of the relation
+    Given Relations as dictionary i.e of format LHS: {[RHS], [RHS]} where RHS is a List
+    rule_writer to add rules
+    :param rel_dict: Dictionary of format key: value  where value is {[v_i],...,[v_j]} and v_x is a list
+    :param rule_writer:
+    """
+
+    # For each LHS, find
+    # Number of unique RHS and their frequency
     for lhs in rel_dict.keys():
         rhs = rel_dict[lhs]
         # Initialize dict
         prob_map = {}
 
-        # Use Append through Iteration
+        # Use Append through Iteration to find the frequency
         for e in rhs:
             prob_map.setdefault(tuple(e), list()).append(1)
+
+        # With frequency, find the Conditional Probability
+        # len(rhs) gives us the number of occurances of LHS
         for key, val in prob_map.items():
             prob_map[key] = sum(val)/len(rhs)
 
+        # Write the rules
         for rhs, prob in prob_map.items():
             rule_writer.add_rule(lhs, rhs, prob)
             #print("Alpha: " + key + " Beta: " + e[0] + " Prob: " + str(e[1]))
@@ -97,12 +122,14 @@ def main():
     # print a few parsed sentences
     # NOTE: you can remove this if you like
     for sent in psents:
-        print(sent)
-    lhs = psents[0][0]
-    form_relation(lhs, psents[0][1:])
-    print(rel_dict)
 
-    # TODO: write the rules to the correct output file using the write_rules method
+        # Assigning Parent to LHS, and passing the parents and list of children as arguments
+        lhs = sent[0]
+        form_relation(lhs, sent[1:])
+
+    #print(rel_dict)
+
+    # Write the rules to the correct output file using the write_rules method, after calculating the probabilities
     rule_writer = RuleWriter()
     calculate_prob(rel_dict, rule_writer)
     rule_writer.write_rules()
